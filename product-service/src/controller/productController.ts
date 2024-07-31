@@ -103,12 +103,14 @@ class ProductController implements IProductController {
           .status(404)
           .json({ status: "failed", message: "Product not found" });
       } else {
-        await redisClient.del(`product:${productId}`);
-        await redisClient.setEx(
-          `product:${productId}`,
-          3600,
-          JSON.stringify(product)
-        );
+        await Promise.all([
+          redisClient.del(`product:${productId}`),
+          redisClient.setEx(
+            `product:${productId}`,
+            3600,
+            JSON.stringify(product)
+          ),
+        ]);
         return res.status(200).json({ status: "success", data: product });
       }
     } catch (error) {
